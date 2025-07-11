@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.*
+dist/
+build/
+coverage/
+.DS_Store
+*.log
+*.local
+.vscode/
+.idea/
+*.swp
+*.swo
+npm-debug.log*
+# Ignore OS junk
+Thumbs.db

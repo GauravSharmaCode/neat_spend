@@ -1,0 +1,7 @@
+// For GitHub Codespaces: basic Node.js devcontainer
+{
+  "name": "NeatSpend Monorepo",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": {},
+  "postCreateCommand": "npm install --workspaces || true"
+}

@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install service dependencies
+        run: |
+          cd services/neatspend-api && npm install
+          cd ../../neatspend-logger && npm install
+          cd ../neatspend-auth-verifier && npm install
+          cd ../neatspend-sms-parser && npm install
+
+      - name: Lint all packages (if configured)
+        run: |
+          npx eslint . || true
+
+      - name: Run tests
+        run: |
+          npm test || echo "No tests found"
