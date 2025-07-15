@@ -17,27 +17,11 @@ model User {
   phone       String?     @unique
   isActive    Boolean     @default(true)
   isVerified  Boolean     @default(false)
+  role        String      @default("user") // user, admin, etc.
   lastLoginAt DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   deletedAt   DateTime?
-  transactions Transaction[]
 
   @@map("users")
-}
-
-model Transaction {
-  id          String    @id @default(uuid())
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
-  amount      Float
-  category    String
-  description String?
-  source      String
-  date        DateTime
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
-
-  @@map("transactions")
 }

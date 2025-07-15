@@ -1,13 +1,88 @@
 {
-  "name": "neatspend-root",
+  "name": "neatspend-monorepo",
   "version": "0.1.0",
   "private": true,
+  "description": "NeatSpend microservices monorepo",
+  "workspaces": [
+    "services/*",
+    "shared"
+  ],
   "scripts": {
+    "install:all": "npm install && npm run install:services",
+    "install:services": "npm run install:user-service && npm run install:api && npm run install:auth-verifier && npm run install:sms-parser && npm run install:pubsub-handler",
+    "install:user-service": "cd services/user-service && npm install",
+    "install:api": "cd services/neatspend-api && npm install", 
+    "install:auth-verifier": "cd services/auth-verifier-service && npm install",
+    "install:sms-parser": "cd services/sms-parser-service && npm install",
+    "install:pubsub-handler": "cd services/pubsub-handler-service && npm install",
+    "install:shared": "cd shared && npm install",
+    
+    "dev:all": "concurrently \"npm run dev:user-service\" \"npm run dev:api\" \"npm run dev:auth-verifier\" \"npm run dev:sms-parser\"",
+    "dev:user-service": "cd services/user-service && npm run dev",
+    "dev:api": "cd services/neatspend-api && npm run dev",
+    "dev:auth-verifier": "cd services/auth-verifier-service && npm run dev",
+    "dev:sms-parser": "cd services/sms-parser-service && npm run dev",
+    "dev:pubsub-handler": "cd services/pubsub-handler-service && npm run dev",
+    
+    "test:all": "npm run test:user-service && npm run test:api && npm run test:auth-verifier && npm run test:sms-parser",
+    "test:user-service": "cd services/user-service && npm test",
+    "test:api": "cd services/neatspend-api && npm test",
+    "test:auth-verifier": "cd services/auth-verifier-service && npm test",
+    "test:sms-parser": "cd services/sms-parser-service && npm test",
+    "test:pubsub-handler": "cd services/pubsub-handler-service && npm test",
+    
+    "lint:all": "npm run lint:user-service && npm run lint:api && npm run lint:auth-verifier && npm run lint:sms-parser",
+    "lint:user-service": "cd services/user-service && npm run lint",
+    "lint:api": "cd services/neatspend-api && npm run lint",
+    "lint:auth-verifier": "cd services/auth-verifier-service && npm run lint",
+    "lint:sms-parser": "cd services/sms-parser-service && npm run lint",
+    "lint:pubsub-handler": "cd services/pubsub-handler-service && npm run lint",
+    
+    "build:all": "npm run build:user-service && npm run build:api",
+    "build:user-service": "cd services/user-service && npm run build",
+    "build:api": "cd services/neatspend-api && npm run build",
+    
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down",
+    "docker:clean": "docker-compose down -v --rmi all",
+    
+    "db:migrate:user-service": "cd services/user-service && npm run prisma:migrate",
+    "db:migrate:api": "cd services/neatspend-api && npm run prisma:migrate",
+    
+    "create-service": "node scripts/create-service.js",
+    "test:services": "node scripts/test-services.js",
+    "migrate:services": "node scripts/migrate-services.js",
+    "test:services": "node scripts/test-services.js",
+    
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
-    "prettier": "^3.3.1"
+    "prettier": "^3.3.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  },
+  "lint-staged": {
+    "*.{js,json,md}": [
+      "prettier --write"
+    ],
+    "*.js": [
+      "eslint --fix"
+    ]
+  },
+  "keywords": ["microservices", "monorepo", "nodejs", "express"],
+  "author": "NeatSpend Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/neat-spend.git"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
   }
 }
