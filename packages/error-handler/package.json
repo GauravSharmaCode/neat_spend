@@ -1,0 +1,10 @@
+{
+  "name": "@gauravsharmacode/error-handler",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "description": "Global error handler and AppError for NeatSpend microservices",
+  "scripts": {
+    "dev": "echo 'Service not implemented yet'"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@gauravsharmacode/neat-logger",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "description": "A neat logger for NeatSpend microservices",
+  "scripts": {
+    "dev": "echo 'Service not implemented yet'"
+  }
+}

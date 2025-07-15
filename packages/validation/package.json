@@ -1,0 +1,7 @@
+{
+  "name": "@gauravsharmacode/validation",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "description": "Shared validation schemas and middleware for NeatSpend microservices"
+}
