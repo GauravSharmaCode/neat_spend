@@ -22,7 +22,7 @@ function logWithMeta(message, meta = {}) {
   const func = meta.func || "";
   const level = LEVELS.includes(meta.level) ? meta.level : "info";
   // If durationMs is present and a string, convert to number rounded to 2 decimals
-  let extra = { ...meta.extra };
+  const extra = { ...meta.extra };
   if (extra && typeof extra.durationMs === "string") {
     const num = Number(extra.durationMs);
     if (!isNaN(num)) extra.durationMs = Math.round(num * 100) / 100;

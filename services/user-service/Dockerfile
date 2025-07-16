@@ -6,14 +6,15 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install dependencies using npm install instead of npm ci
+# since package-lock.json might not exist in workspace setups
+RUN npm install --only=production && npm cache clean --force
 
 # Production stage
 FROM node:20-alpine AS production
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init and openssl for proper signal handling and Prisma compatibility
+RUN apk add --no-cache dumb-init openssl
 
 # Create app user
 RUN addgroup -g 1001 -S nodejs && \
