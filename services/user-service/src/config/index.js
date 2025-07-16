@@ -43,8 +43,8 @@ const config = {
   isTest: process.env.NODE_ENV === 'test'
 };
 
-// Validate required config
-if (!config.database.url) {
+// Validate required config (skip in test environment)
+if (!config.database.url && process.env.NODE_ENV !== 'test') {
   logWithMeta('DATABASE_URL is required', { level: 'error' });
   process.exit(1);
 }

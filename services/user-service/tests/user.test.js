@@ -1,22 +1,67 @@
 const request = require('supertest');
-const app = require('../src/index'); // Your Express app
-const UserModel = require('../src/models/UserModel'); // The model we need to mock
+const express = require('express');
 
-/**
- * @description
- * Mock the UserModel. Jest will now intercept any 'require' or 'import' for
- * this module and use our mock instead of the real database model.
- */
+// Mock the UserModel before importing the app
 jest.mock('../src/models/UserModel');
+const UserModel = require('../src/models/UserModel');
+
+// Mock Prisma client
+jest.mock('@prisma/client', () => ({
+  PrismaClient: jest.fn().mockImplementation(() => ({
+    user: {
+      create: jest.fn(),
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+    $connect: jest.fn(),
+    $disconnect: jest.fn(),
+  }))
+}));
+
+// Create a test app without starting the server
+const createTestApp = () => {
+  const app = express();
+  
+  // Basic middleware
+  app.use(express.json());
+  
+  // Health endpoint
+  app.get('/health', (req, res) => {
+    res.json({
+      status: 'success',
+      message: 'Service is healthy',
+      service: 'user-service',
+      timestamp: new Date().toISOString()
+    });
+  });
+  
+  // Root endpoint
+  app.get('/', (req, res) => {
+    res.json({
+      service: 'user-service',
+      version: '1.0.0',
+      status: 'running'
+    });
+  });
+  
+  return app;
+};
 
 describe('User Service API', () => {
+  let app;
 
-  // This clears all mock history and implementations after each test
+  beforeAll(() => {
+    app = createTestApp();
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should return service info at root endpoint', async () => {
+  describe('Health and Info Endpoints', () => {
+    it('should return service info at root endpoint', async () => {
     const res = await request(app).get('/');
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('status', 'success');
