@@ -120,7 +120,8 @@ const userServiceProxy = createProxyMiddleware({
       code: 'SERVICE_UNAVAILABLE'
     });
   },
-  onProxyReq: (proxyReq, req, res) => {
+  // eslint-disable-next-line no-unused-vars
+  onProxyReq: (proxyReq, req, _res) => {
     logWithMeta('Proxying request to user service', {
       func: 'proxyRequest',
       level: 'info',
@@ -131,7 +132,8 @@ const userServiceProxy = createProxyMiddleware({
       }
     });
   },
-  onProxyRes: (proxyRes, req, res) => {
+  // eslint-disable-next-line no-unused-vars
+  onProxyRes: (proxyRes, req, _res) => {
     logWithMeta('Received response from user service', {
       func: 'proxyResponse',
       level: 'info',
@@ -168,7 +170,8 @@ app.get("/users", async (req, res) => {
 });
 
 // Handle undefined routes
-app.all('*', (req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+app.all('*', (req, res, _next) => {
   logWithMeta(`Route not found: ${req.method} ${req.originalUrl}`, { 
     func: 'routeNotFound',
     level: 'warn',
@@ -189,7 +192,8 @@ app.all('*', (req, res, next) => {
 });
 
 // Global error handling middleware
-app.use((err, req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, _next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 

@@ -1,7 +1,6 @@
 const { createLogger } = require('@gauravsharmacode/neat-logger');
 const userService = require('../services/userService');
 const { AppError } = require('../middleware/errorHandler');
-const { createSendToken, hashPassword, correctPassword } = require('../middleware/auth');
 const config = require('../config');
 
 const logger = createLogger({

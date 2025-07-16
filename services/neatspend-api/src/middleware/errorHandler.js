@@ -92,7 +92,8 @@ const sendErrorProd = (err, req, res) => {
   });
 };
 
-const globalErrorHandler = (err, req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+const globalErrorHandler = (err, req, res, _next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
