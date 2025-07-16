@@ -2,7 +2,6 @@ const { logWithMeta } = require('@gauravsharmacode/neat-logger');
 const { verifyToken } = require('../utils/auth');
 const UserModel = require('../models/UserModel');
 const { AppError } = require('./errorHandler');
-const config = require('../config');
 
 const protect = async (req, res, next) => {
   const func = 'protectMiddleware';

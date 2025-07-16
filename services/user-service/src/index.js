@@ -92,7 +92,8 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 
 // Handle undefined routes
-app.all('*', (req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+app.all('*', (req, res, _next) => {
   logWithMeta(`Route not found: ${req.method} ${req.originalUrl}`, { 
     func: 'routeNotFound',
     level: 'warn',

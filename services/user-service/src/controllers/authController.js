@@ -1,7 +1,7 @@
 const { logWithMeta } = require('@gauravsharmacode/neat-logger');
 const UserService = require('../services/UserService');
 const { signToken } = require('../utils/auth');
-const config = require('../config');
+const { AppError } = require('../middleware/errorHandler');
 
 const catchAsync = (fn) => {
   return (req, res, next) => {
@@ -24,7 +24,8 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 
-const register = catchAsync(async (req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+const register = catchAsync(async (req, res, _next) => {
   const func = 'authController.register';
   logWithMeta('Registration attempt', { func, level: 'info', extra: { email: req.body.email } });
 

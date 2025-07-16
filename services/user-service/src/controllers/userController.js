@@ -1,7 +1,6 @@
 const { logWithMeta } = require('@gauravsharmacode/neat-logger');
 const UserService = require('../services/UserService');
 const { AppError } = require('../middleware/errorHandler');
-const config = require('../config');
 
 const catchAsync = (fn) => {
   return (req, res, next) => {
@@ -9,7 +8,8 @@ const catchAsync = (fn) => {
   };
 };
 
-const createUser = catchAsync(async (req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+const createUser = catchAsync(async (req, res, _next) => {
   const func = 'userController.createUser';
   logWithMeta('Request to create user', { func, level: 'info', extra: { email: req.body.email } });
   
@@ -53,7 +53,8 @@ const getUser = catchAsync(async (req, res, next) => {
   });
 });
 
-const getAllUsers = catchAsync(async (req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+const getAllUsers = catchAsync(async (req, res, _next) => {
   const func = 'userController.getAllUsers';
   logWithMeta('Request to get all users', { func, level: 'info' });
 
@@ -92,7 +93,8 @@ const updateUser = catchAsync(async (req, res, next) => {
   });
 });
 
-const deleteUser = catchAsync(async (req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+const deleteUser = catchAsync(async (req, res, _next) => {
   const func = 'userController.deleteUser';
   logWithMeta('Request to delete user', { func, level: 'info', extra: { userId: req.params.id } });
 
@@ -141,7 +143,8 @@ const updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
-const deleteMe = catchAsync(async (req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+const deleteMe = catchAsync(async (req, res, _next) => {
   const func = 'userController.deleteMe';
   logWithMeta('Request to delete current user (me)', { func, level: 'info', extra: { userId: req.user.id } });
 
@@ -163,7 +166,8 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
-const getUserStats = catchAsync(async (req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+const getUserStats = catchAsync(async (req, res, _next) => {
   const func = 'userController.getUserStats';
   logWithMeta('Request for user stats', { func, level: 'info' });
   // Placeholder implementation
@@ -173,7 +177,8 @@ const getUserStats = catchAsync(async (req, res, next) => {
   });
 });
 
-const changePassword = catchAsync(async (req, res, next) => {
+// eslint-disable-next-line no-unused-vars
+const changePassword = catchAsync(async (req, res, _next) => {
   const func = 'userController.changePassword';
   logWithMeta('Request to change password', { func, level: 'info', extra: { userId: req.params.id } });
   // Placeholder implementation

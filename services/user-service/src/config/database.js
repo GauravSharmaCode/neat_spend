@@ -3,9 +3,7 @@ const { logWithMeta } = require('@gauravsharmacode/neat-logger');
 const config = require('../config');
 
 // Prisma query logging middleware
-const queryLogger = (params) => {
-  const startTime = Date.now();
-  
+const queryLogger = () => {
   return async (params, next) => {
     const before = Date.now();
     const result = await next(params);

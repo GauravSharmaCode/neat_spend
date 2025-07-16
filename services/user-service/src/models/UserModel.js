@@ -1,6 +1,5 @@
 const { logWithMeta } = require('@gauravsharmacode/neat-logger');
 const { prisma } = require('../config/database');
-const config = require('../config');
 
 class UserModel {
   
@@ -130,8 +129,8 @@ class UserModel {
       const existingUser = await prisma.user.findFirst({
         where: {
           OR: [
-            { email: criteria.email },
-            ...(criteria.phone ? [{ phone: criteria.phone }] : [])
+            { email: email },
+            ...(phone ? [{ phone }] : [])
           ],
           deletedAt: null
         },

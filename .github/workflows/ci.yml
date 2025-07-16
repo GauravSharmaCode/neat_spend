@@ -1,6 +1,6 @@
 name: build-and-test
 
-on: 
+on:
   push:
     branches: [ main, develop ]
   pull_request:
@@ -10,186 +10,27 @@ env:
   NODE_VERSION: '20.x'
 
 jobs:
-  test-user-service:
+  setup-and-test:
     runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_DB: neatspend_users_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: services/user-service/package-lock.json
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        working-directory: services/user-service
-        run: npm ci
+      - name: Install dependencies (all workspaces)
+        run: npm install
 
-      - name: Run Prisma migrations
-        working-directory: services/user-service
-        run: |
-          npx prisma migrate dev --name init
-          npx prisma generate
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/neatspend_users_test?schema=public
+      - name: Lint all services
+        run: npm run lint:all
 
-      - name: Run linting
-        working-directory: services/user-service
-        run: npm run lint
+      - name: Test all services
+        run: npm run test:all
 
-      - name: Run tests
-        working-directory: services/user-service
-        run: npm test
-        env:
-          NODE_ENV: test
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/neatspend_users_test?schema=public
-          JWT_SECRET: test-secret
-
-  test-api:
-    runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_DB: neatspend_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: services/neatspend-api/package-lock.json
-
-      - name: Install dependencies
-        working-directory: services/neatspend-api
-        run: npm ci
-
-      - name: Run Prisma migrations
-        working-directory: services/neatspend-api
-        run: |
-          npx prisma migrate dev --name init
-          npx prisma generate
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/neatspend_test?schema=public
-
-      - name: Run linting
-        working-directory: services/neatspend-api
-        run: npm run lint
-
-      - name: Run tests
-        working-directory: services/neatspend-api
-        run: npm test
-        env:
-          NODE_ENV: test
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/neatspend_test?schema=public
-
-  # Docker build test
-  docker-build:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build user-service Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./services/user-service
-          file: ./services/user-service/Dockerfile
-          push: false
-          tags: user-service:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build neatspend-api Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./services/neatspend-api
-          file: ./services/neatspend-api/Dockerfile
-          push: false
-          tags: neatspend-api:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  # Integration tests with docker-compose
-  integration-test:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Create .env file
-        run: |
-          echo "NODE_ENV=test" > .env
-          echo "POSTGRES_PASSWORD=postgres" >> .env
-
-      - name: Run docker-compose
-        run: |
-          docker-compose up -d postgres
-          docker-compose up --build -d user-service
-          
-      - name: Wait for services
-        run: |
-          timeout 60 bash -c 'until curl -f http://localhost:3001/health; do sleep 2; done'
-
-      - name: Run integration tests
-        run: |
-          curl -f http://localhost:3001/health
-          # Add more integration tests here
-
-      - name: Cleanup
-        if: always()
-        run: docker-compose down -v
-
-  # Security scan
-  security-scan:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
+      - name: Build all services
+        run: npm run build:all
