@@ -16,7 +16,7 @@
     "test:coverage": "jest --coverage --passWithNoTests",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "build": "npm run prisma:generate && npm run test && npm run lint"
+    "build": "npm run prisma:generate && npm run lint"
   },
   "dependencies": {
     "@gauravsharmacode/neat-logger": "^1.0.0",

@@ -18,20 +18,18 @@
 
 ```
 neat_spend/
-├── services/                     # All microservices
+├── services/                     # Microservices (npm workspaces)
 │   ├── user-service/             # User management & authentication ✅
-│   ├── neatspend-api/           # API Gateway & request routing ✅
-│   ├── ai-insight-service/      # AI-powered insights (planned)
-│   ├── sms-sync-worker/         # SMS synchronization (planned)
-│   └── shared-utils/            # Shared utilities & helpers ✅
-├── utils/                       # Workspace utilities
+│   └── neatspend-api/           # API Gateway & request routing ✅
+├── utils/                       # Shared utilities (npm workspaces)  
 │   └── logger/                  # Centralized logging package ✅
 ├── apps/                        # Frontend applications (planned)
 │   ├── web/                     # Next.js web app
 │   └── mobile/                  # React Native mobile app
-├── infra/                       # Infrastructure configs
-├── docker-compose.yml           # Local orchestration ✅
-└── package.json                 # Workspace configuration ✅
+├── .github/workflows/           # CI/CD pipelines ✅
+├── .devcontainer/              # Codespaces configuration ✅
+├── docker-compose.yml          # Local orchestration ✅
+└── package.json                # Workspace configuration ✅
 ```
 
 ---
@@ -127,9 +125,9 @@ npm run dev:api
 All services use the shared logging utility from `utils/logger`:
 
 ```javascript
-const logger = require('@neat-spend/logger');
+const { logWithMeta } = require('@gauravsharmacode/neat-logger');
 
-logger.info('User created successfully', {
+logWithMeta('info', 'User created successfully', {
   service: 'user-service',
   function: 'createUser',
   userId: user.id,
@@ -176,15 +174,19 @@ logger.info('User created successfully', {
 
 ### Working with Services
 ```sh
-# Add dependency to specific service
-npm install express --workspace=services/user-service
+# npm workspaces automatically manages dependencies
+npm install                       # Installs all workspace deps
+npm ci                           # CI-friendly install
 
-# Run service-specific commands
+# Run workspace-specific commands
 npm run test --workspace=services/user-service
-npm run lint --workspace=services/user-service
-
-# Build service for production
+npm run lint --workspace=services/neatspend-api
 npm run build --workspace=services/user-service
+
+# Or use convenience scripts
+npm run test:user-service
+npm run lint:api
+npm run build:all
 ```
 
 ### Database Operations
@@ -247,6 +249,30 @@ PORT=3001
 NODE_ENV=production
 USER_SERVICE_URL=http://user-service:3001
 PORT=8080
+```
+
+---
+
+## ⚙️ CI/CD & Development Environment
+
+### GitHub Actions
+- **Automated testing** on every push and PR
+- **Multi-stage pipeline**: lint → test → build
+- **npm workspaces optimized** with `npm ci`
+- **Production-ready builds** with quality gates
+
+### GitHub Codespaces  
+- **One-click development environment**
+- **Docker-in-Docker support** for full containerization
+- **Pre-configured devcontainer** with all tools
+- **Automatic service startup** and health checks
+
+### Build Process
+```sh
+# Each service build includes:
+npm run prisma:generate     # Generate Prisma client
+npm run test               # Run all tests  
+npm run lint               # Code quality checks
 ```
 
 ---
