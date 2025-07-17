@@ -9,67 +9,93 @@ set -e
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}🚀 Starting NeatSpend services...${NC}"
 
-# Check if Docker daemon is running
-if ! docker info > /dev/null 2>&1; then
-    echo -e "${YELLOW}⏳ Waiting for Docker daemon to start...${NC}"
-    sleep 5
-fi
-
-# Start the services in the background
-echo -e "${BLUE}🐳 Starting Docker Compose services...${NC}"
-docker-compose up -d
-
-# Wait a moment for services to initialize
-sleep 3
-
-# Check service status
-echo -e "${BLUE}📊 Service Status:${NC}"
-docker-compose ps
-
-# Health check function
-check_service() {
-    local service_name=$1
-    local port=$2
-    local endpoint=$3
+# Check if Docker is available and working
+if command -v docker &> /dev/null; then
+    echo -e "${BLUE}🐳 Docker found, checking if daemon is running...${NC}"
     
-    echo -e "${YELLOW}⏳ Checking $service_name...${NC}"
-    
-    # Wait up to 30 seconds for service to be ready
-    for i in {1..15}; do
-        if curl -f -s "http://localhost:$port$endpoint" > /dev/null 2>&1; then
-            echo -e "${GREEN}✅ $service_name is healthy!${NC}"
-            return 0
+    # Wait for Docker daemon to be ready
+    timeout=30
+    counter=0
+    while ! docker info > /dev/null 2>&1; do
+        if [ $counter -ge $timeout ]; then
+            echo -e "${YELLOW}⚠️  Docker daemon not ready, falling back to Node.js mode${NC}"
+            break
         fi
+        echo -e "${YELLOW}⏳ Waiting for Docker daemon... ($counter/${timeout}s)${NC}"
         sleep 2
+        counter=$((counter + 2))
     done
     
-    echo -e "${YELLOW}⚠️  $service_name may still be starting...${NC}"
-    return 1
-}
+    if docker info > /dev/null 2>&1; then
+        echo -e "${GREEN}✅ Docker is ready!${NC}"
+        
+        # Docker mode
+        echo -e "${BLUE}🐳 Starting Docker Compose services...${NC}"
+        if docker-compose up -d; then
+            echo -e "${GREEN}✅ Services started with Docker!${NC}"
+            
+            # Wait a moment for services to initialize
+            sleep 5
+            
+            # Check service status
+            echo -e "${BLUE}📊 Service Status:${NC}"
+            docker-compose ps
+            
+            # Health checks
+            echo -e "\n${BLUE}🔍 Health Checks:${NC}"
+            sleep 10
+            
+            # Check PostgreSQL
+            if docker-compose exec -T postgres pg_isready -U postgres > /dev/null 2>&1; then
+                echo -e "${GREEN}✅ PostgreSQL is healthy${NC}"
+            else
+                echo -e "${YELLOW}⚠️  PostgreSQL is starting up...${NC}"
+            fi
+            
+            # Check services
+            if curl -f -s "http://localhost:3001/health" > /dev/null 2>&1; then
+                echo -e "${GREEN}✅ User Service is healthy${NC}"
+            else
+                echo -e "${YELLOW}⚠️  User Service is starting up...${NC}"
+            fi
+            
+            if curl -f -s "http://localhost:8080/health" > /dev/null 2>&1; then
+                echo -e "${GREEN}✅ API Gateway is healthy${NC}"
+            else
+                echo -e "${YELLOW}⚠️  API Gateway is starting up...${NC}"
+            fi
+            
+            echo -e "\n${BLUE}🌐 Available endpoints:${NC}"
+            echo "  • API Gateway Health: http://localhost:8080/health"
+            echo "  • User Service Health: http://localhost:3001/health"
+            echo "  • View logs: docker-compose logs -f"
+            echo "  • Stop services: docker-compose down"
+            
+            exit 0
+        else
+            echo -e "${YELLOW}⚠️  Docker Compose failed, falling back to Node.js mode${NC}"
+        fi
+    fi
+fi
 
-# Give services time to start
-echo -e "${YELLOW}⏳ Waiting for services to be ready...${NC}"
-sleep 10
+# Node.js fallback mode
+echo -e "${BLUE}⚡ Starting in Node.js development mode...${NC}"
+echo -e "${YELLOW}📋 Note: You'll need to start services manually or set up PostgreSQL${NC}"
 
-# Check each service
-check_service "PostgreSQL" "5432" "" || true
-check_service "User Service" "3001" "/health" || true
-check_service "API Gateway" "8080" "/health" || true
+echo -e "\n${BLUE}🛠️  Available Commands:${NC}"
+echo "  • Start user service: cd services/user-service && npm run dev"
+echo "  • Start API gateway: cd services/neatspend-api && npm run dev"
+echo "  • Run tests: npm run test:all"
+echo "  • Check status: npm run status"
 
-echo -e "${GREEN}🎉 NeatSpend services are starting up!${NC}"
-echo -e "${BLUE}🌐 Available endpoints:${NC}"
-echo "  • API Gateway Health: http://localhost:8080/health"
-echo "  • User Service Health: http://localhost:3001/health"
-echo "  • View all logs: docker-compose logs -f"
-echo "  • Stop services: docker-compose down"
+echo -e "\n${BLUE}🎯 Quick Start (run in separate terminals):${NC}"
+echo "  Terminal 1: cd services/user-service && npm run dev"
+echo "  Terminal 2: cd services/neatspend-api && npm run dev"
 
-# Show real-time logs in the background (optional)
-echo -e "${BLUE}📋 Starting log viewer in background...${NC}"
-# Uncomment the next line if you want auto-tailing logs
-# nohup docker-compose logs -f > /tmp/neatspend-logs.log 2>&1 &
-
-echo -e "${GREEN}✨ Ready to code! Open http://localhost:8080/health to verify the API Gateway${NC}"
+echo -e "\n${GREEN}✨ Environment ready for development!${NC}"
+echo -e "${BLUE}💡 Tip: Use 'Ctrl+Shift+\`' to open multiple terminals${NC}"

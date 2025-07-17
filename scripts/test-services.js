@@ -4,12 +4,14 @@
  * Test script to verify microservice communication
  */
 
-const { createLogger } = require('@gauravsharmacode/neat-logger');
+const { logWithMeta } = require('@gauravsharmacode/neat-logger');
 
-const logger = createLogger({
-  service: 'test-services',
-  level: 'info'
-});
+// Create logger helper functions
+const logger = {
+  info: (message, extra = {}) => logWithMeta(message, { level: 'info', extra }),
+  error: (message, extra = {}) => logWithMeta(message, { level: 'error', extra }),
+  warn: (message, extra = {}) => logWithMeta(message, { level: 'warn', extra })
+};
 
 const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:8080';
 const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:3001';

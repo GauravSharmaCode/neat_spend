@@ -12,8 +12,8 @@ const createTestApp = () => {
   app.get('/health', (req, res) => {
     res.json({
       status: 'success',
-      message: 'Service is healthy',
-      service: 'user-service',
+      message: 'API Gateway is healthy',
+      service: 'neatspend-api',
       timestamp: new Date().toISOString()
     });
   });
@@ -21,7 +21,7 @@ const createTestApp = () => {
   // Root endpoint
   app.get('/', (req, res) => {
     res.json({
-      service: 'user-service',
+      service: 'neatspend-api',
       version: '1.0.0',
       status: 'running'
     });
@@ -30,7 +30,7 @@ const createTestApp = () => {
   return app;
 };
 
-describe('User Service API', () => {
+describe('NeatSpend API Gateway', () => {
   let app;
 
   beforeAll(() => {
@@ -41,7 +41,7 @@ describe('User Service API', () => {
     it('should return service info at root endpoint', async () => {
       const res = await request(app).get('/');
       expect(res.statusCode).toBe(200);
-      expect(res.body).toHaveProperty('service', 'user-service');
+      expect(res.body).toHaveProperty('service', 'neatspend-api');
       expect(res.body).toHaveProperty('version', '1.0.0');
       expect(res.body).toHaveProperty('status', 'running');
     });
@@ -50,8 +50,8 @@ describe('User Service API', () => {
       const res = await request(app).get('/health');
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('status', 'success');
-      expect(res.body).toHaveProperty('message', 'Service is healthy');
-      expect(res.body).toHaveProperty('service', 'user-service');
+      expect(res.body).toHaveProperty('message', 'API Gateway is healthy');
+      expect(res.body).toHaveProperty('service', 'neatspend-api');
     });
   });
 });

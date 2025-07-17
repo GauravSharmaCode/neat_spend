@@ -24,7 +24,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies (all workspaces)
-        run: npm install
+        run: npm ci
 
       - name: Lint all services
         run: npm run lint:all

@@ -40,11 +40,11 @@ neat_spend/
 
 ### 1. Install Dependencies
 ```sh
-# Install all workspace dependencies
+# Install all workspace dependencies (automatically handles all services)
 npm install
 
-# Verify workspace structure
-npm run workspace:info
+# For CI/CD environments
+npm ci
 ```
 
 ### 2. Start Services
@@ -52,11 +52,11 @@ npm run workspace:info
 # Start all services with Docker Compose
 docker-compose up -d
 
-# Check service health
-npm run health:check
+# Or start services in development mode
+npm run dev:all
 
-# View logs
-docker-compose logs -f
+# Check service health
+npm run codespace:health
 ```
 
 ### 3. Development Commands
@@ -64,8 +64,14 @@ docker-compose logs -f
 # Run tests for all services
 npm run test:all
 
+# Run tests in CI mode
+npm run test:ci
+
 # Lint all services
 npm run lint:all
+
+# Build all services for production
+npm run build:all
 
 # Start individual service for development
 npm run dev:user-service

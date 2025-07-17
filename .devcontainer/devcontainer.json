@@ -5,10 +5,8 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
-      "enableNonRootDocker": "true"
-    },
-    "ghcr.io/devcontainers/features/docker-compose:2": {
-      "version": "latest"
+      "enableNonRootDocker": "true",
+      "dockerDashComposeVersion": "v2"
     }
   },
   "postCreateCommand": ".devcontainer/setup.sh",
