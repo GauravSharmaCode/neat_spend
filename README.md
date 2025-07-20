@@ -21,8 +21,6 @@ neat_spend/
 ├── services/                     # Microservices (npm workspaces)
 │   ├── user-service/             # User management & authentication ✅
 │   └── neatspend-api/           # API Gateway & request routing ✅
-├── utils/                       # Shared utilities (npm workspaces)  
-│   └── logger/                  # Centralized logging package ✅
 ├── apps/                        # Frontend applications (planned)
 │   ├── web/                     # Next.js web app
 │   └── mobile/                  # React Native mobile app

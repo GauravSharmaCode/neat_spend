@@ -5,8 +5,7 @@
   "description": "NeatSpend microservices monorepo",
   "workspaces": [
     "services/user-service",
-    "services/neatspend-api", 
-    "utils/logger"
+    "services/neatspend-api"
   ],
   "scripts": {
     "ci": "npm ci",
@@ -18,10 +17,9 @@
     "test:api": "npm run test --workspace=services/neatspend-api",
     "test:ci": "npm run test --workspace=services/user-service && npm run test --workspace=services/neatspend-api",
     "test:coverage": "npm run test --workspace=services/user-service -- --coverage && npm run test --workspace=services/neatspend-api -- --coverage",
-    "lint:all": "npm run lint --workspace=services/user-service && npm run lint --workspace=services/neatspend-api && npm run lint --workspace=utils/logger",
+    "lint:all": "npm run lint --workspace=services/user-service && npm run lint --workspace=services/neatspend-api",
     "lint:user-service": "npm run lint --workspace=services/user-service",
     "lint:api": "npm run lint --workspace=services/neatspend-api",
-    "lint:logger": "npm run lint --workspace=utils/logger",
     "build:all": "npm run build --workspace=services/user-service && npm run build --workspace=services/neatspend-api",
     "build:user-service": "npm run build --workspace=services/user-service",
     "build:api": "npm run build --workspace=services/neatspend-api",
@@ -40,17 +38,24 @@
     "db:migrate:api": "npm run prisma:migrate --workspace=services/neatspend-api",
     "create-service": "node scripts/create-service.js",
     "test:services": "node scripts/test-services.js",
-    "migrate:services": "node scripts/migrate-services.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/helmet": "^0.0.48",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.0.15",
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
-    "prettier": "^3.3.1"
+    "prettier": "^3.3.1",
+    "typescript": "^5.8.3"
   },
   "lint-staged": {
     "*.{js,json,md}": [

@@ -1,13 +1,17 @@
 {
   "testEnvironment": "node",
-  "testMatch": ["**/tests/**/*.test.js"],
+  "testMatch": ["**/tests/**/*.test.{js,ts}"],
   "collectCoverageFrom": [
-    "src/**/*.js",
-    "!src/index.js",
+    "src/**/*.{js,ts}",
+    "!src/index.{js,ts}",
     "!**/node_modules/**"
   ],
   "coverageDirectory": "coverage",
   "coverageReporters": ["text", "lcov", "html"],
-  "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
-  "testTimeout": 10000
+  "setupFilesAfterEnv": ["<rootDir>/tests/setup.ts"],
+  "testTimeout": 10000,
+  "preset": "ts-jest",
+  "transform": {
+    "^.+\\.ts$": "ts-jest"
+  }
 }
