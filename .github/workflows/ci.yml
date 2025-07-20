@@ -29,8 +29,8 @@ jobs:
       - name: Lint all services
         run: npm run lint:all
 
-      - name: Test all services
-        run: npm run test:all
-
       - name: Build all services
         run: npm run build:all
+
+      - name: Test all services
+        run: npm run test:all
