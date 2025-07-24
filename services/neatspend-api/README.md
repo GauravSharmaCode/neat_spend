@@ -4,16 +4,31 @@ A production-grade TypeScript API Gateway service that routes requests to approp
 
 ## ✨ Features
 
+### Core Gateway Features
 - ✅ **TypeScript**: Full type safety and modern development experience
 - ✅ **Request Routing**: Intelligent routing to microservices with proxy middleware
 - ✅ **Service Discovery**: Health checks and service connectivity monitoring
+- ✅ **API Versioning**: Support for multiple API versions
+
+### Reliability & Observability
 - ✅ **Centralized Logging**: Structured logging with neat-logger integration
-- ✅ **Security**: CORS, Helmet security headers, and request validation
 - ✅ **Circuit Breaker**: Protection against cascading service failures
 - ✅ **Error Handling**: Comprehensive error handling and recovery
 - ✅ **Graceful Shutdown**: Proper connection cleanup and shutdown procedures
+- ✅ **Health Monitoring**: Advanced health checks for all services
+
+### Security & Performance
+- ✅ **Security**: CORS, Helmet security headers, and request validation
+- ✅ **Rate Limiting**: Configurable rate limiting per endpoint
+- ✅ **Response Compression**: Gzip compression for API responses
 - ✅ **Docker Ready**: Containerization with multi-stage builds
 - ✅ **Production Ready**: Battle-tested API Gateway patterns
+
+### Recent Additions
+- ✅ **Enhanced Proxy Logic**: Improved service routing with fallbacks
+- ✅ **Metrics Collection**: Request duration and status code tracking
+- ✅ **Improved Error Responses**: Standardized error format across services
+- ✅ **Request Tracing**: Unique request IDs for cross-service tracing
 
 ## 🚀 Tech Stack
 

@@ -123,8 +123,11 @@ const userServiceUrl: string = config.services.userService;
 const userServiceProxy = createProxyMiddleware({
   target: userServiceUrl,
   changeOrigin: true,
-  timeout: 1000, // Very short timeout for immediate failure detection
-  proxyTimeout: 1000, // Very short timeout for immediate failure detection
+  pathRewrite: { '^/api/v1': '/api/v1' },
+  secure: false,
+  ws: true,
+  timeout: 30000, // 30 second timeout
+  proxyTimeout: 30000, // 30 second proxy timeout
   // Handle all proxy errors including timeouts
 
   /**
