@@ -47,7 +47,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node dist/healthcheck.js || exit 1
+  CMD node dist/core/utils/healthcheck.js || exit 1
 
 # Start the application
 CMD ["dumb-init", "node", "dist/index.js"]
