@@ -12,6 +12,7 @@ import globalErrorHandler from "./middleware/errorHandler";
 // Import routes
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
+import healthRoutes from "./routes/healthRoutes";
 
 import { HealthResponse, ApiError } from "./interfaces";
 
@@ -93,8 +94,8 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 // API routes
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/users", userRoutes);
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 
 // Catch-all route for undefined routes
 app.all("*", (req: Request, res: Response) => {
