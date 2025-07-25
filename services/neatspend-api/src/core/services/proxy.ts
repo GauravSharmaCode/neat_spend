@@ -56,7 +56,7 @@ export const createServiceProxy = (
     },
 
     // Log proxy requests
-    onProxyReq: (proxyReq: any, req: Request) => {
+    onProxyReq: (proxyReq: unknown, req: Request) => {
       logWithMeta(`Proxying request to ${serviceName}`, {
         func: "proxyRequest",
         level: "info",
@@ -72,15 +72,15 @@ export const createServiceProxy = (
     },
 
     // Log proxy responses
-    onProxyRes: (proxyRes: any, req: Request) => {
+    onProxyRes: (proxyRes: unknown, req: Request) => {
       logWithMeta(`Received response from ${serviceName}`, {
         func: "proxyResponse",
         level: "info",
         extra: {
-          statusCode: proxyRes.statusCode,
+          statusCode: (proxyRes as { statusCode: number }).statusCode,
           method: req.method,
           path: req.path,
-          headers: proxyRes.headers,
+          headers: (proxyRes as { headers: Record<string, string> }).headers,
         },
       });
     },

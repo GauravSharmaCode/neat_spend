@@ -1,5 +1,4 @@
 import { HealthCheck } from '../../interfaces';
-import config from '../../config';
 
 /**
  * Checks the health of a microservice

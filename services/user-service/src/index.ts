@@ -12,7 +12,6 @@ import globalErrorHandler from "./middleware/errorHandler";
 // Import routes
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
-import healthRoutes from "./routes/healthRoutes";
 
 import { HealthResponse, ApiError } from "./interfaces";
 
