@@ -4,18 +4,28 @@ A production-grade microservice for user management and authentication in the Ne
 
 ## ✨ Features
 
+### Core Features
 - ✅ User registration and authentication
 - ✅ JWT-based authentication with secure token management
 - ✅ Password hashing with bcrypt
 - ✅ Role-based access control (RBAC)
 - ✅ Input validation and sanitization
-- ✅ Comprehensive structured logging
+
+### Security & Reliability
+- ✅ Comprehensive structured logging with neat-logger
 - ✅ Database query monitoring with Prisma
 - ✅ Rate limiting and security headers
 - ✅ Health checks and service monitoring
 - ✅ Graceful shutdown handling
 - ✅ Docker containerization with multi-stage builds
 - ✅ Production-ready error handling
+
+### Recent Additions
+- ✅ TypeScript conversion for improved type safety
+- ✅ Enhanced test coverage with Jest
+- ✅ Improved error handling middleware
+- ✅ Standardized response formats
+- ✅ Performance optimizations
 
 ## 🚀 Tech Stack
 
