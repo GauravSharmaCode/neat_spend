@@ -218,10 +218,9 @@ All business logic routes are **proxied** to appropriate microservices:
 
 #### Authentication Routes (→ user-service)
 ```http
-POST /api/v1/auth/register     # → user-service:3001/register
-POST /api/v1/auth/login        # → user-service:3001/login
-POST /api/v1/auth/logout       # → user-service:3001/logout
-POST /api/v1/auth/refresh      # → user-service:3001/refresh
+POST /api/v1/auth/register     # → user-service:3001/auth/register
+POST /api/v1/auth/login        # → user-service:3001/auth/login
+POST /api/v1/auth/logout       # → user-service:3001/auth/logout
 ```
 
 #### User Management Routes (→ user-service)

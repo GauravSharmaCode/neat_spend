@@ -7,13 +7,13 @@ import {
 
 const router = Router();
 
-// proxy /api/v1/auth and /api/v1/users to user-service
-router.use("/v1", userServiceProxy);
-
-// SMS service routes (for future implementation)
+// SMS service routes (for future implementation) - must come before user service
 router.use("/v1/sms", smsServiceProxy);
 
-// Insight service routes (for future implementation)
+// Insight service routes (for future implementation) - must come before user service
 router.use("/v1/insights", insightServiceProxy);
+
+// User service routes - auth and users (catch-all for /v1)
+router.use("/v1", userServiceProxy);
 
 export default router;

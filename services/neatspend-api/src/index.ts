@@ -30,10 +30,6 @@ app.use(helmet());
 // CORS middleware
 app.use(cors(config.cors));
 
-// Body parser middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
 // Request logging middleware
 app.use(requestLogger);
 

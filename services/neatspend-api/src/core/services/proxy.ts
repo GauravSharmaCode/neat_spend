@@ -24,11 +24,9 @@ export const createServiceProxy = (
     changeOrigin: true,
     pathRewrite,
     secure: false,
-    ws: false, // Disable websockets as they can cause issues with POST requests
-    timeout: 30000, // 30 second timeout
-    proxyTimeout: 30000, // 30 second proxy timeout
-    followRedirects: true, // Follow any redirects
-    xfwd: true, // Add x-forwarded headers
+    ws: false,
+    timeout: 30000,
+    proxyTimeout: 30000,
 
     // Handle errors
     // @ts-expect-error - http-proxy-middleware types may be incomplete
@@ -59,16 +57,6 @@ export const createServiceProxy = (
 
     // Log proxy requests
     onProxyReq: (proxyReq: any, req: Request) => {
-      // For POST requests, ensure the content-length is correct
-      if (req.method === "POST" && req.body) {
-        const bodyData = JSON.stringify(req.body);
-        // Update header
-        proxyReq.setHeader("Content-Type", "application/json");
-        proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
-        // Write body data
-        proxyReq.write(bodyData);
-      }
-
       logWithMeta(`Proxying request to ${serviceName}`, {
         func: "proxyRequest",
         level: "info",
@@ -103,17 +91,17 @@ export const createServiceProxy = (
 export const userServiceProxy = createServiceProxy(
   "user-service",
   config.services.userService,
-  { "^/api": "" } // Remove /api prefix when forwarding to user service
+  { "^/v1": "" } // Remove /v1 prefix when forwarding to user service
 );
 
 export const smsServiceProxy = createServiceProxy(
   "sms-service",
   config.services.smsService,
-  { "^/api/v1/sms": "/api/v1" }
+  { "^/v1/sms": "/api/v1" }
 );
 
 export const insightServiceProxy = createServiceProxy(
   "insight-service",
   config.services.insightService,
-  { "^/api/v1/insights": "/api/v1" }
+  { "^/v1/insights": "/api/v1" }
 );
