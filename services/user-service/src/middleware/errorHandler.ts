@@ -30,6 +30,7 @@ export class AppError extends Error {
   public readonly status: string;
   public readonly isOperational: boolean;
 
+
   /**
    * Creates an instance of the AppError class.
    *
