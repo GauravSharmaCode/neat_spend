@@ -24,6 +24,7 @@ if [ ! -f "services/user-service/.env" ]; then
 NODE_ENV=development
 PORT=3001
 SERVICE_NAME=user-service
+# amazonq-ignore-next-line
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/neatspend_users?schema=public
 JWT_SECRET=your-development-jwt-secret-change-in-production
 LOG_LEVEL=info

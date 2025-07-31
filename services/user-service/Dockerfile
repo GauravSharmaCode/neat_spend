@@ -21,24 +21,23 @@ FROM node:20-alpine AS production
 # Install dumb-init and openssl for signal handling and Prisma
 RUN apk add --no-cache dumb-init openssl
 
-# Create app user
+# Create app user and logs directory FIRST
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
+    adduser -S nextjs -u 1001 && \
+    mkdir -p /app/logs && \
+    chown nextjs:nodejs /app/logs
 
 # Set working directory
 WORKDIR /app
 
-# Copy built app from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/prisma ./prisma
+# Copy built app from builder with correct ownership
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 # Generate Prisma client after copying schema
 RUN npx prisma generate
-
-# Create logs directory with proper permissions
-RUN mkdir -p /app/logs && chown -R nextjs:nodejs /app
 
 # Switch to non-root user
 USER nextjs

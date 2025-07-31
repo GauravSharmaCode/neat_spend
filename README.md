@@ -12,6 +12,58 @@
 - **Containerization:** Docker Compose for local development
 - **Testing:** Jest with comprehensive test coverage
 
+## 🏗️ Architecture Diagram
+
+```mermaid
+graph TB
+    Client["🌐 Client Applications<br/>(Web/Mobile)"] --> Gateway["⚡ Nginx API Gateway<br/>:8080"]
+    
+    Gateway --> UserService["👤 User Service<br/>:3001"]
+    Gateway --> AuthService["🔐 Auth Service<br/>(via User Service)"]
+    
+    UserService --> Database[("🗄️ PostgreSQL<br/>:5432")]
+    
+    Gateway --> HealthCheck["🏥 Health Check<br/>:8090"]
+    
+    subgraph "Docker Network"
+        Gateway
+        UserService
+        Database
+    end
+    
+    style Client fill:#e1f5fe
+    style Gateway fill:#f3e5f5
+    style UserService fill:#e8f5e8
+    style Database fill:#fff3e0
+    style HealthCheck fill:#fce4ec
+```
+
+## 🔄 Request Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant N as Nginx Gateway
+    participant U as User Service
+    participant D as Database
+    
+    C->>N: POST /api/v1/auth/login
+    N->>U: POST /auth/login
+    U->>D: Query user credentials
+    D-->>U: User data
+    U-->>N: JWT token + user info
+    N-->>C: Authentication response
+    
+    Note over C,D: Authenticated Request
+    C->>N: GET /api/v1/users/me<br/>Authorization: Bearer <token>
+    N->>U: GET /users/me<br/>Authorization: Bearer <token>
+    U->>U: Validate JWT token
+    U->>D: Query user profile
+    D-->>U: User profile data
+    U-->>N: User profile response
+    N-->>C: User profile data
+```
+
 ---
 
 ## 📦 Repository Structure
@@ -20,15 +72,23 @@
 neat_spend/
 ├── services/                     # Microservices (npm workspaces)
 │   ├── user-service/             # User management & authentication ✅
-│   └── neatspend-api/           # API Gateway & request routing ✅
+│   ├── nginx-gateway/           # Nginx API Gateway & request routing ✅
+│   ├── neatspend-api/           # Legacy Express.js API Gateway (deprecated) 🚧
+│   ├── ai-insight-service/      # Financial analytics and insights 🚧
+│   └── sms-sync-worker/         # Transaction extraction from SMS 🚧
 ├── apps/                        # Frontend applications (planned)
-│   ├── web/                     # Next.js web app
-│   └── mobile/                  # React Native mobile app
+│   ├── web/                     # Next.js web app 🚧
+│   └── mobile/                  # React Native mobile app 🚧
+├── infra/                       # Infrastructure configurations
+│   └── cloud-run-configs/       # Google Cloud Run deployment configs 🚧
+├── scripts/                     # Utility scripts for development
 ├── .github/workflows/           # CI/CD pipelines ✅
 ├── .devcontainer/              # Codespaces configuration ✅
 ├── docker-compose.yml          # Local orchestration ✅
 └── package.json                # Workspace configuration ✅
 ```
+
+✅ = Implemented and ready to use | 🚧 = In development
 
 ---
 
@@ -75,10 +135,31 @@ npm run dev:api
 ```
 
 ### 4. Access Services
-- **API Gateway**: http://localhost:8080
+- **Nginx API Gateway**: http://localhost:8080
+- **Gateway Health Check**: http://localhost:8090/nginx-health
 - **User Service**: http://localhost:3001  
 - **Database**: postgresql://postgres:postgres@localhost:5432/neatspend
 - **Health Checks**: `/health` endpoint on each service
+
+### 5. Available Endpoints
+
+| Endpoint | Service | Description | Status |
+|----------|---------|-------------|--------|
+| `GET /` | Nginx Gateway | Service info | ✅ Working |
+| `GET /health` | Nginx Gateway | Gateway health status | ✅ Working |
+| `GET /nginx-health` | Nginx Gateway | Internal health check (port 8090) | ✅ Working |
+| `GET /` | User Service | Service info and health status | ✅ Working |
+| `GET /health` | User Service | Detailed health with uptime/memory | ✅ Working |
+| `POST /api/v1/auth/register` | User Service (via Gateway) | User registration | ✅ Working |
+| `POST /api/v1/auth/login` | User Service (via Gateway) | JWT authentication | ✅ Working |
+| `GET /api/v1/users/me` | User Service (via Gateway) | Get current user profile | ✅ Working |
+| `GET /api/v1/users` | User Service (via Gateway) | List users (admin only) | ✅ Working |
+
+**Recent Fixes:**
+- ✅ Nginx gateway now properly routes `/api/v1/users/*` to `/users/*`
+- ✅ Nginx gateway now properly routes `/api/v1/auth/*` to `/auth/*`
+- ✅ Error responses now return proper JSON format
+- ✅ Authentication and authorization working correctly
 
 ---
 
@@ -93,11 +174,17 @@ npm run dev:api
 - RESTful API with Express.js
 - Health checks and monitoring
 
-#### API Gateway (`neatspend-api`)
+#### Nginx API Gateway (`nginx-gateway`)
+- High-performance request routing to microservices
+- Built-in rate limiting and load balancing
+- Security headers and CORS handling
+- Health monitoring and logging
+
+#### Legacy API Gateway (`neatspend-api`) - Deprecated
+- Express.js-based gateway (being phased out)
 - Request routing to microservices
 - Service discovery and health checks
 - Centralized error handling
-- Request/response logging
 
 #### Shared Utils (`shared-utils`)
 - Common utilities across services
@@ -111,10 +198,30 @@ npm run dev:api
 - Performance monitoring
 
 ### Planned Services
-- **AI Insight Service**: Financial analytics and insights
-- **SMS Sync Worker**: Transaction extraction from SMS
-- **Web App**: Next.js frontend
-- **Mobile App**: React Native application
+
+#### AI Insight Service (`ai-insight-service`) - In Development
+- Financial analytics and insights
+- Machine learning for spending patterns
+- Budget recommendations
+- Anomaly detection for transactions
+
+#### SMS Sync Worker (`sms-sync-worker`) - In Development
+- Transaction extraction from SMS notifications
+- Automated categorization
+- Real-time transaction processing
+- Bank integration support
+
+#### Web App (`apps/web`) - In Development
+- Next.js frontend application
+- Responsive dashboard
+- Financial visualization
+- User account management
+
+#### Mobile App (`apps/mobile`) - In Development
+- React Native mobile application
+- Push notifications for transactions
+- Offline support
+- Biometric authentication
 
 ---
 
@@ -284,15 +391,30 @@ npm run lint               # Code quality checks
 - **🔍 Observable**: Centralized logging and comprehensive health checks
 - **🛡️ Resilient**: Docker containerization with health monitoring
 - **🧪 Testable**: Comprehensive test coverage with Jest
+- **⚡ High Performance**: Nginx-based API gateway with optimized routing
+- **🔐 Secure**: JWT authentication with role-based access control
 
 ---
 
 ## 📚 Documentation
 
+### Main Documentation
 - **Main README**: This file - overview and quick start
+- **MICROSERVICES.md**: Detailed explanation of the microservices architecture
+- **QUICK_START.md**: Fast setup guide for new developers
+- **PROJECT_STATUS.md**: Current project status and roadmap
+- **CONTRIBUTING.md**: Guidelines for contributing to the project
+
+### Service Documentation
 - **Service READMEs**: Each service has detailed API documentation
+  - [User Service](services/user-service/README.md)
+  - [API Gateway](services/neatspend-api/README.md)
+
+### Infrastructure
 - **Docker Setup**: `docker-compose.yml` with full service orchestration
 - **Package Management**: `package.json` with workspace configuration
+- **Devcontainer**: [.devcontainer/README.md](.devcontainer/README.md) for Codespaces setup
+- **Cloud Deployment**: [infra/cloud-run-configs/README.md](infra/cloud-run-configs/README.md) for production deployment
 
 ---
 

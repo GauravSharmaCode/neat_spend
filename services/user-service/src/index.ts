@@ -93,8 +93,8 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 // API routes
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/users", userRoutes);
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 
 // Catch-all route for undefined routes
 app.all("*", (req: Request, res: Response) => {
