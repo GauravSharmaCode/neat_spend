@@ -1,3 +1,6 @@
+# Ignore service account keys and sensitive credentials
+services/sms-sync-worker/keys/
+*.json
 node_modules/
 .env
 .env.*

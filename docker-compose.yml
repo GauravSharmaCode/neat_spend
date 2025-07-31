@@ -65,5 +65,37 @@ services:
       retries: 3
       start_period: 5s
 
+
+  sms-sync-worker:
+    build:
+      context: ./services/sms-sync-worker
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4002:4002"
+    environment:
+      NODE_ENV: development
+      PORT: 4002
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+      USER_SERVICE_URL: http://user-service:3001/api/v1/users
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/gcp_service_account.json
+      FIRESTORE_PROJECT_ID: your-firestore-project-id
+    secrets:
+      - gcp_service_account.json
+    depends_on:
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4002/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
 volumes:
   postgres_data:
+
+secrets:
+  gcp_service_account.json:
+    file: ./services/sms-sync-worker/gcp_service_account.json
