@@ -43,22 +43,23 @@ services:
       retries: 3
       start_period: 40s
 
-  # NeatSpend Main API Gateway
-  neatspend-api:
+  # Nginx API Gateway
+  nginx-gateway:
     build:
-      context: ./services/neatspend-api
+      context: ./services/nginx-gateway
     restart: unless-stopped
     ports:
       - "8080:8080"
-    environment:
-      NODE_ENV: development
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/neatspend?schema=public
-      USER_SERVICE_URL: http://user-service:3001
+      - "8090:8090"
     depends_on:
-      postgres:
-        condition: service_healthy
       user-service:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8090/nginx-health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
 volumes:
   postgres_data:

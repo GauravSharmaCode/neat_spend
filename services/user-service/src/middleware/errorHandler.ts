@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { logWithMeta } from '@gauravsharmacode/neat-logger';
 import config from '../config';
 
@@ -68,13 +68,7 @@ const sendErrorDev = (err: DatabaseError, req: Request, res: Response): Response
 
   return res.status(err.statusCode || 500).json({
     status: err.status,
-    error: {
-      message: err.message,
-      stack: err.stack,
-      name: err.name
-    },
     message: err.message,
-    stack: err.stack,
   });
 };
 
@@ -109,7 +103,8 @@ const sendErrorProd = (err: DatabaseError, req: Request, res: Response): Respons
 const globalErrorHandler = (
   err: DatabaseError,
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Response => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
