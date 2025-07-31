@@ -1,5 +1,5 @@
 services:
-  # Database
+  # PostgreSQL DB
   postgres:
     image: postgres:15-alpine
     restart: unless-stopped
@@ -20,68 +20,50 @@ services:
 
   # User Service
   user-service:
-    build: ./services/user-service
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - "3001:3001"
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/neatspend_users?schema=public
-      - PORT=3001
-      - SERVICE_NAME=user-service
-      - JWT_SECRET=your-development-jwt-secret-change-in-production
-      - LOG_LEVEL=info
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/neatspend_users?schema=public
+      PORT: 3001
+      SERVICE_NAME: user-service
+      JWT_SECRET: your-development-jwt-secret-change-in-production
+      LOG_LEVEL: info
+      DB_LOG_QUERIES: true
+      DB_LOG_SLOW_QUERIES: true
+      DB_SLOW_QUERY_THRESHOLD: 100
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "healthcheck.js"]
+      test: ["CMD-SHELL", "node dist/healthcheck.js"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
-  # Main API Gateway/Legacy API
-  neatspend-api:
-    build: ./services/neatspend-api
+  # Nginx API Gateway
+  nginx-gateway:
+    build:
+      context: ./services/nginx-gateway
     restart: unless-stopped
     ports:
       - "8080:8080"
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/neatspend?schema=public
-      - USER_SERVICE_URL=http://user-service:3001
+      - "8090:8090"
     depends_on:
-      postgres:
-        condition: service_healthy
       user-service:
         condition: service_healthy
-
-  # SMS Sync Worker (Commented out for now)
-  # sms-sync-worker:
-  #   build: ./services/sms-sync-worker
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8081:8081"
-  #   environment:
-  #     - NODE_ENV=development
-  #     - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/neatspend_sms?schema=public
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-
-  # AI Insight Service (Commented out for now)
-  # ai-insight-service:
-  #   build: ./services/ai-insight-service
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8082:8082"
-  #   environment:
-  #     - NODE_ENV=development
-  #     - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/neatspend_insights?schema=public
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:8090/nginx-health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
 volumes:
   postgres_data:
