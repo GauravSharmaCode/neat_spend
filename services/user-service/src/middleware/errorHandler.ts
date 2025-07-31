@@ -30,6 +30,14 @@ export class AppError extends Error {
   public readonly status: string;
   public readonly isOperational: boolean;
 
+  /**
+   * Creates an instance of the AppError class.
+   *
+   * @param message - Error message string.
+   * @param statusCode - HTTP status code for the error.
+   * @param isOperational - Optional boolean indicating if the error is operational
+   * (i.e. not a programming error, but a client or network error).
+   */
   constructor(
     message: string,
     statusCode: number,

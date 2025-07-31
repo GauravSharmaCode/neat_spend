@@ -48,21 +48,37 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use((req: Request, res: Response, next: NextFunction) => {
   const startTime = Date.now();
 
-  res.on("finish", () => {
-    const duration = Date.now() - startTime;
-    logWithMeta("HTTP Request", {
-      func: "requestLogger",
-      level: "info",
-      extra: {
-        method: req.method,
-        url: req.originalUrl,
-        statusCode: res.statusCode,
-        durationMs: duration,
-        ip: req.ip,
-        userAgent: req.get("User-Agent"),
-      },
-    });
-  });
+  /**
+   * Logs an HTTP request with context and timing information
+   * @param {Request} req - Express request object
+   * @param {Response} res - Express response object
+   * @example
+   * const startTime = Date.now();
+   * logRequest();
+   */
+  const logRequest = () => {
+    const level =
+      res.statusCode >= 500 ? "error" : res.statusCode >= 400 ? "warn" : "info";
+
+    logWithMeta(
+      `>>>>> HTTP ${req.method} Request recieved at ${req.originalUrl} URL with payload ${JSON.stringify(req.body)}>>>>>`,
+      {
+        func: "requestLogger",
+        level,
+        extra: {
+          method: req.method,
+          url: req.originalUrl,
+          statusCode: res.statusCode,
+          ip: req.ip,
+          // @ts-ignore - user added by auth middleware
+          userId: req.user?.id,
+        },
+      }
+    );
+  };
+
+  // res.on("finish", logRequest);
+  // res.on("close", logRequest);
 
   next();
 });
