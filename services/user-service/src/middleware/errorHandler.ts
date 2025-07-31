@@ -1,6 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { logWithMeta } from '@gauravsharmacode/neat-logger';
-import config from '../config';
+import { Request, Response, NextFunction } from "express";
+import { logWithMeta } from "@gauravsharmacode/neat-logger";
 
 // Extend Error interface for database errors
 interface DatabaseError extends Error {
@@ -14,15 +13,31 @@ interface DatabaseError extends Error {
   status?: string;
 }
 
+/**
+ * Global error handling middleware for Express applications.
+ *
+ * Handles and formats various error types, including database errors,
+ * validation errors, and JWT errors, returning a standardized JSON response.
+ * Logs error details with metadata for debugging and auditing purposes.
+ *
+ * @param err - The error object, possibly extended with database-specific properties.
+ * @param req - Express request object.
+ * @param res - Express response object.
+ * @param next - Express next middleware function.
+ */
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly status: string;
   public readonly isOperational: boolean;
 
-  constructor(message: string, statusCode: number, isOperational: boolean = true) {
+  constructor(
+    message: string,
+    statusCode: number,
+    isOperational: boolean = true
+  ) {
     super(message);
     this.statusCode = statusCode;
-    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
+    this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
     this.isOperational = isOperational;
 
     Error.captureStackTrace(this, this.constructor);
@@ -41,87 +56,54 @@ const handleDuplicateFieldsDB = (err: DatabaseError): AppError => {
 };
 
 const handleValidationErrorDB = (err: DatabaseError): AppError => {
-  if (!err.errors) return new AppError('Validation error', 400);
-  
-  const errors = Object.values(err.errors).map(el => el.message);
-  const message = `Invalid input data. ${errors.join('. ')}`;
+  if (!err.errors) return new AppError("Validation error", 400);
+
+  const errors = Object.values(err.errors).map((el) => el.message);
+  const message = `Invalid input data. ${errors.join(". ")}`;
   return new AppError(message, 400);
 };
 
 const handleJWTError = (): AppError =>
-  new AppError('Invalid token. Please log in again!', 401);
+  new AppError("Invalid token. Please log in again!", 401);
 
 const handleJWTExpiredError = (): AppError =>
-  new AppError('Your token has expired! Please log in again.', 401);
-
-const sendErrorDev = (err: DatabaseError, req: Request, res: Response): Response => {
-  logWithMeta('ERROR 💥', {
-    level: 'error',
-    extra: {
-      error: err.message,
-      stack: err.stack,
-      url: req.originalUrl,
-      method: req.method,
-      ip: req.ip
-    }
-  });
-
-  return res.status(err.statusCode || 500).json({
-    status: err.status,
-    message: err.message,
-  });
-};
-
-const sendErrorProd = (err: DatabaseError, req: Request, res: Response): Response => {
-  // A) Operational, trusted error: send message to client
-  if (err.isOperational) {
-    return res.status(err.statusCode || 500).json({
-      status: err.status,
-      message: err.message,
-    });
-  }
-
-  // B) Programming or other unknown error: don't leak error details
-  // 1) Log error
-  logWithMeta('ERROR 💥', {
-    level: 'error',
-    extra: {
-      error: err.message,
-      url: req.originalUrl,
-      method: req.method,
-      ip: req.ip
-    }
-  });
-
-  // 2) Send generic message
-  return res.status(err.statusCode || 500).json({
-    status: 'error',
-    message: err.message || 'Something went wrong!'
-  });
-};
+  new AppError("Your token has expired! Please log in again.", 401);
 
 const globalErrorHandler = (
   err: DatabaseError,
   req: Request,
   res: Response,
-  next: NextFunction
-): Response => {
+  _next: NextFunction // eslint-disable-line @typescript-eslint/no-unused-vars
+): void => {
+  // Log the error for debugging
+  logWithMeta("ERROR 💥", {
+    level: "error",
+    extra: {
+      error: err.message,
+      url: req.originalUrl,
+      method: req.method,
+      ip: req.ip,
+    },
+  });
+
+  // Set default values
   err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
+  err.status = err.status || "error";
 
-  if (config.isDevelopment) {
-    return sendErrorDev(err, req, res);
-  } else {
-    let error: DatabaseError = { ...err, message: err.message };
+  // Handle specific error types
+  let error: DatabaseError = { ...err, message: err.message };
 
-    if (error.name === 'CastError') error = handleCastErrorDB(error);
-    if (error.code === 11000) error = handleDuplicateFieldsDB(error);
-    if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
-    if (error.name === 'JsonWebTokenError') error = handleJWTError();
-    if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
+  if (error.name === "CastError") error = handleCastErrorDB(error);
+  if (error.code === 11000) error = handleDuplicateFieldsDB(error);
+  if (error.name === "ValidationError") error = handleValidationErrorDB(error);
+  if (error.name === "JsonWebTokenError") error = handleJWTError();
+  if (error.name === "TokenExpiredError") error = handleJWTExpiredError();
 
-    return sendErrorProd(error, req, res);
-  }
+  // Always return clean JSON response
+  res.status(error.statusCode || 500).json({
+    status: error.status || "error",
+    message: error.message || "Something went wrong!",
+  });
 };
 
 export default globalErrorHandler;
