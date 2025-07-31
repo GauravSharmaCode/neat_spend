@@ -46,15 +46,24 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
-  const startTime = Date.now();
+  // const startTime = Date.now();
 
   /**
-   * Logs an HTTP request with context and timing information
+   * Logs HTTP requests with a structured JSON format.
+   *
+   * @func logRequest
    * @param {Request} req - Express request object
    * @param {Response} res - Express response object
-   * @example
-   * const startTime = Date.now();
-   * logRequest();
+   * @param {NextFunction} next - Express next function
+   *
+   * @prop {string} level - "error", "warn", or "info" based on the response status code
+   * @prop {string} func - Always "requestLogger"
+   * @prop {Object} extra - Additional logging information
+   * @prop {string} extra.method - HTTP method
+   * @prop {string} extra.url - Request URL
+   * @prop {string} extra.statusCode - HTTP status code
+   * @prop {string} extra.ip - Request IP address
+   * @prop {number} extra.userId - User ID if authenticated (optional)
    */
   const logRequest = () => {
     const level =
@@ -70,15 +79,15 @@ app.use((req: Request, res: Response, next: NextFunction) => {
           url: req.originalUrl,
           statusCode: res.statusCode,
           ip: req.ip,
-          // @ts-ignore - user added by auth middleware
+          // @ts-expect-error - user added by auth middleware
           userId: req.user?.id,
         },
       }
     );
   };
 
-  // res.on("finish", logRequest);
-  // res.on("close", logRequest);
+  res.on("finish", logRequest);
+  res.on("close", logRequest);
 
   next();
 });
