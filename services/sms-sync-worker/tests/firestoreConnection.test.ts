@@ -1,7 +1,12 @@
 import { Firestore } from "@google-cloud/firestore";
 import firestoreConfig from "../src/config/firestore";
+import * as fs from "fs";
 
-describe("Firestore Connection", () => {
+// Skip Firestore tests in CI environment where credentials don't exist
+const hasCredentials = fs.existsSync(firestoreConfig.keyFilename);
+const describeOrSkip = hasCredentials ? describe : describe.skip;
+
+describeOrSkip("Firestore Connection", () => {
   let firestore: Firestore;
 
   beforeAll(() => {
