@@ -50,8 +50,11 @@ sequenceDiagram
     participant C as Client
     participant N as Nginx Gateway
     participant U as User Service
+    participant S as SMS Sync Worker
     participant D as Database
+    participant F as Firestore
 
+    Note over C,F: Authentication Flow
     C->>N: POST /api/v1/auth/login
     N->>U: POST /auth/login
     U->>D: Query user credentials
@@ -59,14 +62,24 @@ sequenceDiagram
     U-->>N: JWT token + user info
     N-->>C: Authentication response
 
-    Note over C,D: Authenticated Request
+    Note over C,F: User Profile Request
     C->>N: GET /api/v1/users/me<br/>Authorization: Bearer <token>
     N->>U: GET /users/me<br/>Authorization: Bearer <token>
-    U->>U: Validate JWT token
+    Note over U: Validate JWT token internally
     U->>D: Query user profile
     D-->>U: User profile data
     U-->>N: User profile response
     N-->>C: User profile data
+
+    Note over C,F: SMS Sync Request
+    C->>N: POST /api/v1/sms-sync/full<br/>Authorization: Bearer <token>
+    N->>S: POST /full<br/>Authorization: Bearer <token>
+    S->>U: Validate JWT token
+    U-->>S: User validation response
+    S->>F: Store SMS messages
+    F-->>S: Storage confirmation
+    S-->>N: Sync success response
+    N-->>C: SMS sync completed
 ```
 
 ---
@@ -78,7 +91,7 @@ neat_spend/
 ├── services/                     # Microservices (npm workspaces)
 │   ├── user-service/             # User management & authentication ✅
 │   ├── nginx-gateway/           # Nginx API Gateway & request routing ✅
-│   ├── neatspend-api/           # Legacy Express.js API Gateway (deprecated) 🚧
+
 │   ├── ai-insight-service/      # Financial analytics and insights 🚧
 │   └── sms-sync-worker/         # Transaction extraction from SMS ✅
 ├── apps/                        # Frontend applications (planned)
@@ -139,13 +152,15 @@ npm run build:all
 
 # Start individual service for development
 npm run dev:user-service
-npm run dev:api
+npm run dev:sms-sync-worker
 ```
 
 ### 4. Access Services
 
 - **Nginx API Gateway**: http://localhost:8080
-- **Gateway Health Check**: http://localhost:8090/nginx-health
+- **Gateway Health Check**: 
+  - External: http://localhost:8080/health (public-facing)
+  - Internal: http://localhost:8090/nginx-health (container health check)
 - **User Service**: http://localhost:3001
 - **SMS Sync Worker**: http://localhost:4002
 - **Database**: postgresql://postgres:postgres@localhost:5432/neatspend
@@ -164,9 +179,18 @@ npm run dev:api
 | `POST /api/v1/auth/login`       | User Service (via Gateway)    | JWT authentication                 | ✅ Working |
 | `GET /api/v1/users/me`          | User Service (via Gateway)    | Get current user profile           | ✅ Working |
 | `GET /api/v1/users`             | User Service (via Gateway)    | List users (admin only)            | ✅ Working |
-| `POST /api/v1/sms-sync/full`    | SMS Sync Worker (via Gateway) | Sync all SMS messages              | ✅ Working |
+| `POST /api/v1/sms-sync/full`    | SMS Sync Worker (via Gateway) | Bulk sync all SMS messages (replaces existing) | ✅ Working |
 | `POST /api/v1/sms-sync/message` | SMS Sync Worker (via Gateway) | Sync single SMS message            | ✅ Working |
-| `GET /api/v1/sms-sync/messages` | SMS Sync Worker (via Gateway) | Get user's SMS messages            | ✅ Working |
+| `GET /api/v1/sms-sync/messages` | SMS Sync Worker (via Gateway) | Get user's SMS messages from Firestore | ✅ Working |
+| `PATCH /api/v1/sms-sync/message/:id` | SMS Sync Worker (via Gateway) | Update specific SMS message | ✅ Working |
+| `DELETE /api/v1/sms-sync/message/:id` | SMS Sync Worker (via Gateway) | Delete specific SMS message | ✅ Working |
+
+### 🔐 Authentication Flow
+
+- **JWT tokens are issued by the User Service** and used across all microservices
+- **SMS Sync Worker validates tokens** by calling the User Service
+- **No external auth providers** - all authentication is internal
+- **Stateless authentication** with JWT tokens containing user ID and metadata
 
 **Recent Fixes:**
 
@@ -198,10 +222,11 @@ npm run dev:api
 
 #### SMS Sync Worker (`sms-sync-worker`)
 
-- Transaction extraction from SMS notifications
-- Automated categorization
-- Real-time transaction processing
-- Bank integration support
+- SMS message synchronization with Firestore
+- JWT authentication with User Service integration
+- RESTful API for message CRUD operations
+- Bulk and single message sync capabilities
+- User-specific message isolation and security
 
 ### Planned Services
 
@@ -230,9 +255,10 @@ npm run dev:api
 
 ## 📋 Logging Strategy
 
-All services use the shared logging utility from `utils/logger`:
+All services use the shared logging utility:
 
 ```javascript
+// Using published npm package
 const { logWithMeta } = require("@gauravsharmacode/neat-logger");
 
 logWithMeta("info", "User created successfully", {
@@ -242,6 +268,8 @@ logWithMeta("info", "User created successfully", {
   email: user.email,
 });
 ```
+
+**Note**: `@gauravsharmacode/neat-logger` is a published npm package providing structured logging across all services.
 
 **Benefits:**
 
