@@ -1,6 +1,9 @@
 # Ignore service account keys and sensitive credentials
 services/sms-sync-worker/keys/
 *.json
+!tsconfig.json
+!package.json
+!package-lock.json
 node_modules/
 .env
 .env.*
