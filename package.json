@@ -38,6 +38,7 @@
     "create-service": "node scripts/create-service.js",
     "test:services": "node scripts/test-services.js",
     "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -84,3 +85,4 @@
     "@gauravsharmacode/neat-logger": "^1.0.1"
   }
 }
+

@@ -34,6 +34,7 @@ WORKDIR /app
 COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/keys ./keys
 # COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 # Generate Prisma client after copying schema

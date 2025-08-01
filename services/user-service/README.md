@@ -21,11 +21,14 @@ A production-grade microservice for user management and authentication in the Ne
 - ✅ Production-ready error handling
 
 ### Recent Additions
-- ✅ TypeScript conversion for improved type safety
-- ✅ Enhanced test coverage with Jest
-- ✅ Improved error handling middleware
-- ✅ Standardized response formats
-- ✅ Performance optimizations
+- ✅ Complete TypeScript conversion with strict type checking
+- ✅ Restructured API routes (/auth and /users separation)
+- ✅ Enhanced error handling with clean JSON responses
+- ✅ Improved authentication middleware with role-based access
+- ✅ User statistics endpoint for admin dashboard
+- ✅ Comprehensive user management CRUD operations
+- ✅ Logout functionality with token invalidation
+- ✅ Enhanced request logging with structured metadata
 
 ## 🚀 Tech Stack
 
@@ -44,18 +47,24 @@ A production-grade microservice for user management and authentication in the Ne
 ```
 user-service/
 ├── src/
-│   ├── controllers/          # Request handlers
+│   ├── controllers/          # Request handlers (TypeScript)
 │   ├── models/              # Database models (Prisma)
 │   ├── middleware/          # Express middleware
 │   ├── routes/              # API route definitions
+│   │   ├── authRoutes.ts    # Authentication routes
+│   │   └── userRoutes.ts    # User management routes
+│   ├── services/            # Business logic services
 │   ├── utils/               # Utility functions
 │   ├── config/              # Configuration files
-│   └── index.js             # Application entry point
+│   ├── interfaces.ts        # TypeScript interfaces
+│   └── index.ts             # Application entry point
 ├── prisma/
 │   ├── schema.prisma        # Database schema
 │   └── migrations/          # Database migrations
 ├── tests/                   # Test files
+├── dist/                    # Compiled JavaScript (build output)
 ├── Dockerfile              # Multi-stage Docker build
+├── tsconfig.json           # TypeScript configuration
 ├── package.json            # Dependencies and scripts
 └── README.md               # This file
 ```
@@ -126,7 +135,7 @@ LOG_LEVEL=info
 
 #### Register User
 ```http
-POST /api/users/register
+POST /auth/register
 Content-Type: application/json
 
 {
@@ -161,7 +170,7 @@ Content-Type: application/json
 
 #### Login User
 ```http
-POST /api/users/login
+POST /auth/login
 Content-Type: application/json
 
 {
@@ -191,15 +200,15 @@ Content-Type: application/json
 
 ### User Management Endpoints
 
-#### Get User Profile
+#### Get Current User Profile
 ```http
-GET /api/users/profile
+GET /users/me
 Authorization: Bearer {jwt-token}
 ```
 
-#### Update User Profile
+#### Update Current User Profile
 ```http
-PUT /api/users/profile
+PATCH /users/me
 Authorization: Bearer {jwt-token}
 Content-Type: application/json
 
@@ -210,30 +219,80 @@ Content-Type: application/json
 }
 ```
 
-#### Change Password
+#### Delete Current User Account
 ```http
-PUT /api/users/change-password
+DELETE /users/me
 Authorization: Bearer {jwt-token}
-Content-Type: application/json
+```
 
-{
-  "currentPassword": "oldPassword123",
-  "newPassword": "newSecurePassword456"
-}
+#### Logout User
+```http
+POST /auth/logout
+Authorization: Bearer {jwt-token}
 ```
 
 ### Admin Endpoints
 
+#### Get User Statistics (Admin only)
+```http
+GET /users/stats
+Authorization: Bearer {admin-jwt-token}
+```
+
 #### List All Users (Admin only)
 ```http
-GET /api/users
+GET /users
 Authorization: Bearer {admin-jwt-token}
+```
+
+#### Create User (Admin only)
+```http
+POST /users
+Authorization: Bearer {admin-jwt-token}
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "securePassword123",
+  "firstName": "New",
+  "lastName": "User"
+}
+```
+
+#### Get Specific User (Admin only)
+```http
+GET /users/{userId}
+Authorization: Bearer {admin-jwt-token}
+```
+
+#### Update User (Admin only)
+```http
+PATCH /users/{userId}
+Authorization: Bearer {admin-jwt-token}
+Content-Type: application/json
+
+{
+  "firstName": "Updated",
+  "lastName": "Name"
+}
 ```
 
 #### Delete User (Admin only)
 ```http
-DELETE /api/users/{userId}
+DELETE /users/{userId}
 Authorization: Bearer {admin-jwt-token}
+```
+
+#### Change User Password (Admin only)
+```http
+PATCH /users/{userId}/change-password
+Authorization: Bearer {admin-jwt-token}
+Content-Type: application/json
+
+{
+  "newPassword": "newSecurePassword456"
+}
 ```
 
 ## 🧪 Testing

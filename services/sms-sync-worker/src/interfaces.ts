@@ -4,7 +4,13 @@ export interface HealthResponse {
   service: string;
   timestamp: string;
   uptime: number;
-  memoryUsage: NodeJS.MemoryUsage;
+  memoryUsage: {
+    rss: number;
+    heapTotal: number;
+    heapUsed: number;
+    external: number;
+    arrayBuffers: number;
+  };
 }
 
 export interface ApiError {
@@ -68,7 +74,7 @@ export interface AppConfig {
 export interface PrismaQueryParams {
   model?: string;
   action: string;
-  args?: any;
+  args?: unknown;
   dataPath?: string[];
   runInTransaction?: boolean;
 }

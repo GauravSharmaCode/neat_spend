@@ -1,14 +1,18 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Router } from "express";
 import {
   syncAllMessages,
   syncSingleMessage,
   getAllMessages,
   getSingleMessage,
   updateMessage,
-  deleteMessage
+  deleteMessage,
 } from "../controllers/smsSyncController";
+import { protect } from "../middleware/auth";
 
 const router = Router();
+
+// Protect all routes
+router.use(protect);
 
 // POST /api/v1/sms-sync/full - Full sync of all messages
 router.post("/full", syncAllMessages);

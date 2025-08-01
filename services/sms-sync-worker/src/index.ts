@@ -117,7 +117,7 @@ app.get("/health", (req: Request, res: Response) => {
   res.status(200).json(healthResponse);
 });
 
-// Mount SMS sync routes
+// Mount SMS sync routes with authentication
 app.use("/api/v1/sms-sync", smsSyncRoutes);
 
 // Catch-all route for undefined routes
