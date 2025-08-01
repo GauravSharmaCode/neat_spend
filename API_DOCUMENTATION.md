@@ -6,6 +6,7 @@
 
 - **Nginx API Gateway**: `http://localhost:8080`
 - **User Service (Direct)**: `http://localhost:3001`
+- **SMS Sync Worker (Direct)**: `http://localhost:4002`
 - **Gateway Health Check**: `http://localhost:8090/nginx-health`
 
 ---
@@ -299,6 +300,100 @@ curl -X POST \
 1. Set base URL: `http://localhost:8080`
 2. Add Authorization header: `Bearer <your-jwt-token>`
 3. Set Content-Type: `application/json` for POST requests
+
+---
+
+## SMS Sync Worker Endpoints
+
+### Sync All Messages
+```http
+POST /api/v1/sms-sync/full
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "userId": "user-uuid",
+  "messages": [
+    {
+      "id": "msg-1",
+      "sender": "BANK",
+      "body": "Transaction alert: $50 spent at Store",
+      "timestamp": "2025-07-31T10:00:00Z"
+    }
+  ]
+}
+```
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "message": "All messages synced"
+}
+```
+
+### Sync Single Message
+```http
+POST /api/v1/sms-sync/message
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "userId": "user-uuid",
+  "message": {
+    "id": "msg-1",
+    "sender": "BANK",
+    "body": "Transaction alert: $50 spent at Store",
+    "timestamp": "2025-07-31T10:00:00Z"
+  }
+}
+```
+
+### Get All Messages
+```http
+GET /api/v1/sms-sync/messages?userId=user-uuid
+Authorization: Bearer <jwt-token>
+```
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "messages": [
+    {
+      "id": "firestore-doc-id",
+      "sender": "BANK",
+      "body": "Transaction alert: $50 spent at Store",
+      "timestamp": "2025-07-31T10:00:00Z"
+    }
+  ]
+}
+```
+
+### Get Single Message
+```http
+GET /api/v1/sms-sync/message/:id?userId=user-uuid
+Authorization: Bearer <jwt-token>
+```
+
+### Update Message
+```http
+PATCH /api/v1/sms-sync/message/:id?userId=user-uuid
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+```
+
+### Delete Message
+```http
+DELETE /api/v1/sms-sync/message/:id?userId=user-uuid
+Authorization: Bearer <jwt-token>
+```
 
 ---
 

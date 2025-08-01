@@ -46,6 +46,32 @@ services:
       retries: 3
       start_period: 40s
 
+  # SMS Sync Worker
+  sms-sync-worker:
+    build:
+      context: ./services/sms-sync-worker
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4002:4002"
+    environment:
+      NODE_ENV: development
+      PORT: 4002
+      SERVICE_NAME: sms-sync-worker
+      LOG_LEVEL: info
+      USER_SERVICE_URL: http://user-service:3001
+      GOOGLE_CLOUD_PROJECT_ID: ultra-heading-467619-r5
+      GOOGLE_APPLICATION_CREDENTIALS: /app/keys/ultra-heading-467619-r5-917350c3132c.json
+    depends_on:
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node dist/healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   # Nginx API Gateway
   nginx-gateway:
     build:
@@ -56,6 +82,8 @@ services:
       - "8090:8090"
     depends_on:
       user-service:
+        condition: service_healthy
+      sms-sync-worker:
         condition: service_healthy
     healthcheck:
       test:

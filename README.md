@@ -17,24 +17,29 @@
 ```mermaid
 graph TB
     Client["🌐 Client Applications<br/>(Web/Mobile)"] --> Gateway["⚡ Nginx API Gateway<br/>:8080"]
-    
-    Gateway --> UserService["👤 User Service<br/>:3001"]
-    Gateway --> AuthService["🔐 Auth Service<br/>(via User Service)"]
-    
+
+    Gateway --> UserService["👤 User Service<br/>:3001<br/>(Auth + User Management)"]
+    Gateway --> SMSWorker["📱 SMS Sync Worker<br/>:4002"]
+
     UserService --> Database[("🗄️ PostgreSQL<br/>:5432")]
-    
+    SMSWorker --> Firestore[("🔥 Firestore<br/>(Google Cloud)")]
+    SMSWorker --> UserService
+
     Gateway --> HealthCheck["🏥 Health Check<br/>:8090"]
-    
+
     subgraph "Docker Network"
         Gateway
         UserService
+        SMSWorker
         Database
     end
-    
+
     style Client fill:#e1f5fe
     style Gateway fill:#f3e5f5
     style UserService fill:#e8f5e8
+    style SMSWorker fill:#e8f5e8
     style Database fill:#fff3e0
+    style Firestore fill:#fff3e0
     style HealthCheck fill:#fce4ec
 ```
 
@@ -46,14 +51,14 @@ sequenceDiagram
     participant N as Nginx Gateway
     participant U as User Service
     participant D as Database
-    
+
     C->>N: POST /api/v1/auth/login
     N->>U: POST /auth/login
     U->>D: Query user credentials
     D-->>U: User data
     U-->>N: JWT token + user info
     N-->>C: Authentication response
-    
+
     Note over C,D: Authenticated Request
     C->>N: GET /api/v1/users/me<br/>Authorization: Bearer <token>
     N->>U: GET /users/me<br/>Authorization: Bearer <token>
@@ -75,7 +80,7 @@ neat_spend/
 │   ├── nginx-gateway/           # Nginx API Gateway & request routing ✅
 │   ├── neatspend-api/           # Legacy Express.js API Gateway (deprecated) 🚧
 │   ├── ai-insight-service/      # Financial analytics and insights 🚧
-│   └── sms-sync-worker/         # Transaction extraction from SMS 🚧
+│   └── sms-sync-worker/         # Transaction extraction from SMS ✅
 ├── apps/                        # Frontend applications (planned)
 │   ├── web/                     # Next.js web app 🚧
 │   └── mobile/                  # React Native mobile app 🚧
@@ -95,6 +100,7 @@ neat_spend/
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
+
 ```sh
 # Install all workspace dependencies (automatically handles all services)
 npm install
@@ -104,6 +110,7 @@ npm ci
 ```
 
 ### 2. Start Services
+
 ```sh
 # Start all services with Docker Compose
 docker-compose up -d
@@ -116,6 +123,7 @@ npm run codespace:health
 ```
 
 ### 3. Development Commands
+
 ```sh
 # Run tests for all services
 npm run test:all
@@ -135,27 +143,33 @@ npm run dev:api
 ```
 
 ### 4. Access Services
+
 - **Nginx API Gateway**: http://localhost:8080
 - **Gateway Health Check**: http://localhost:8090/nginx-health
-- **User Service**: http://localhost:3001  
+- **User Service**: http://localhost:3001
+- **SMS Sync Worker**: http://localhost:4002
 - **Database**: postgresql://postgres:postgres@localhost:5432/neatspend
 - **Health Checks**: `/health` endpoint on each service
 
 ### 5. Available Endpoints
 
-| Endpoint | Service | Description | Status |
-|----------|---------|-------------|--------|
-| `GET /` | Nginx Gateway | Service info | ✅ Working |
-| `GET /health` | Nginx Gateway | Gateway health status | ✅ Working |
-| `GET /nginx-health` | Nginx Gateway | Internal health check (port 8090) | ✅ Working |
-| `GET /` | User Service | Service info and health status | ✅ Working |
-| `GET /health` | User Service | Detailed health with uptime/memory | ✅ Working |
-| `POST /api/v1/auth/register` | User Service (via Gateway) | User registration | ✅ Working |
-| `POST /api/v1/auth/login` | User Service (via Gateway) | JWT authentication | ✅ Working |
-| `GET /api/v1/users/me` | User Service (via Gateway) | Get current user profile | ✅ Working |
-| `GET /api/v1/users` | User Service (via Gateway) | List users (admin only) | ✅ Working |
+| Endpoint                        | Service                       | Description                        | Status     |
+| ------------------------------- | ----------------------------- | ---------------------------------- | ---------- |
+| `GET /`                         | Nginx Gateway                 | Service info                       | ✅ Working |
+| `GET /health`                   | Nginx Gateway                 | Gateway health status              | ✅ Working |
+| `GET /nginx-health`             | Nginx Gateway                 | Internal health check (port 8090)  | ✅ Working |
+| `GET /`                         | User Service                  | Service info and health status     | ✅ Working |
+| `GET /health`                   | User Service                  | Detailed health with uptime/memory | ✅ Working |
+| `POST /api/v1/auth/register`    | User Service (via Gateway)    | User registration                  | ✅ Working |
+| `POST /api/v1/auth/login`       | User Service (via Gateway)    | JWT authentication                 | ✅ Working |
+| `GET /api/v1/users/me`          | User Service (via Gateway)    | Get current user profile           | ✅ Working |
+| `GET /api/v1/users`             | User Service (via Gateway)    | List users (admin only)            | ✅ Working |
+| `POST /api/v1/sms-sync/full`    | SMS Sync Worker (via Gateway) | Sync all SMS messages              | ✅ Working |
+| `POST /api/v1/sms-sync/message` | SMS Sync Worker (via Gateway) | Sync single SMS message            | ✅ Working |
+| `GET /api/v1/sms-sync/messages` | SMS Sync Worker (via Gateway) | Get user's SMS messages            | ✅ Working |
 
 **Recent Fixes:**
+
 - ✅ Nginx gateway now properly routes `/api/v1/users/*` to `/users/*`
 - ✅ Nginx gateway now properly routes `/api/v1/auth/*` to `/auth/*`
 - ✅ Error responses now return proper JSON format
@@ -168,6 +182,7 @@ npm run dev:api
 ### Currently Implemented
 
 #### User Service (`user-service`)
+
 - User registration and authentication
 - JWT token management
 - Prisma ORM with PostgreSQL
@@ -175,49 +190,37 @@ npm run dev:api
 - Health checks and monitoring
 
 #### Nginx API Gateway (`nginx-gateway`)
+
 - High-performance request routing to microservices
 - Built-in rate limiting and load balancing
 - Security headers and CORS handling
 - Health monitoring and logging
 
-#### Legacy API Gateway (`neatspend-api`) - Deprecated
-- Express.js-based gateway (being phased out)
-- Request routing to microservices
-- Service discovery and health checks
-- Centralized error handling
+#### SMS Sync Worker (`sms-sync-worker`)
 
-#### Shared Utils (`shared-utils`)
-- Common utilities across services
-- Database connection helpers
-- Shared constants and types
-
-#### Logger Utility (`utils/logger`)
-- Structured JSON logging
-- Service-specific log formatting
-- Configurable log levels
-- Performance monitoring
-
-### Planned Services
-
-#### AI Insight Service (`ai-insight-service`) - In Development
-- Financial analytics and insights
-- Machine learning for spending patterns
-- Budget recommendations
-- Anomaly detection for transactions
-
-#### SMS Sync Worker (`sms-sync-worker`) - In Development
 - Transaction extraction from SMS notifications
 - Automated categorization
 - Real-time transaction processing
 - Bank integration support
 
+### Planned Services
+
+#### AI Insight Service (`ai-insight-service`) - In Development
+
+- Financial analytics and insights
+- Machine learning for spending patterns
+- Budget recommendations
+- Anomaly detection for transactions
+
 #### Web App (`apps/web`) - In Development
+
 - Next.js frontend application
 - Responsive dashboard
 - Financial visualization
 - User account management
 
 #### Mobile App (`apps/mobile`) - In Development
+
 - React Native mobile application
 - Push notifications for transactions
 - Offline support
@@ -230,17 +233,18 @@ npm run dev:api
 All services use the shared logging utility from `utils/logger`:
 
 ```javascript
-const { logWithMeta } = require('@gauravsharmacode/neat-logger');
+const { logWithMeta } = require("@gauravsharmacode/neat-logger");
 
-logWithMeta('info', 'User created successfully', {
-  service: 'user-service',
-  function: 'createUser',
+logWithMeta("info", "User created successfully", {
+  service: "user-service",
+  function: "createUser",
   userId: user.id,
-  email: user.email
+  email: user.email,
 });
 ```
 
 **Benefits:**
+
 - ✅ Consistent structured JSON logs across all services
 - ✅ Service-specific log formatting
 - ✅ Configurable log levels per service
@@ -251,6 +255,7 @@ logWithMeta('info', 'User created successfully', {
 ## 📋 Technology Stack
 
 ### Backend Services
+
 - **Runtime**: Node.js 20.x
 - **Framework**: Express.js
 - **Database**: PostgreSQL with Prisma ORM
@@ -260,6 +265,7 @@ logWithMeta('info', 'User created successfully', {
 - **Linting**: ESLint with flat config
 
 ### Infrastructure
+
 - **Containerization**: Docker & Docker Compose
 - **Orchestration**: npm workspaces
 - **Development**: Hot reload with nodemon
@@ -267,6 +273,7 @@ logWithMeta('info', 'User created successfully', {
 - **Database Migrations**: Prisma migrate
 
 ### Code Quality
+
 - **Linting**: ESLint across all services
 - **Testing**: Unit and integration tests
 - **Error Handling**: Centralized error middleware
@@ -278,6 +285,7 @@ logWithMeta('info', 'User created successfully', {
 ## 🛠️ Development Workflow
 
 ### Working with Services
+
 ```sh
 # npm workspaces automatically manages dependencies
 npm install                       # Installs all workspace deps
@@ -295,6 +303,7 @@ npm run build:all
 ```
 
 ### Database Operations
+
 ```sh
 # Generate Prisma client
 npm run db:generate --workspace=services/user-service
@@ -307,6 +316,7 @@ npm run db:reset --workspace=services/user-service
 ```
 
 ### Testing Strategy
+
 ```sh
 # Run all tests
 npm run test:all
@@ -324,6 +334,7 @@ npm run test:api
 ## 🔄 Deployment
 
 ### Local Development
+
 ```sh
 # Start all services
 docker-compose up -d
@@ -337,12 +348,14 @@ docker-compose down
 ```
 
 ### Production Deployment
+
 - **Docker**: Each service has optimized multi-stage Dockerfiles
 - **Health Checks**: Built-in health monitoring for all services
 - **Database**: PostgreSQL with Prisma migrations
 - **Monitoring**: Structured logging with centralized collection
 
 ### Environment Variables
+
 ```sh
 # User Service
 NODE_ENV=production
@@ -361,22 +374,25 @@ PORT=8080
 ## ⚙️ CI/CD & Development Environment
 
 ### GitHub Actions
+
 - **Automated testing** on every push and PR
 - **Multi-stage pipeline**: lint → test → build
 - **npm workspaces optimized** with `npm ci`
 - **Production-ready builds** with quality gates
 
-### GitHub Codespaces  
+### GitHub Codespaces
+
 - **One-click development environment**
 - **Docker-in-Docker support** for full containerization
 - **Pre-configured devcontainer** with all tools
 - **Automatic service startup** and health checks
 
 ### Build Process
+
 ```sh
 # Each service build includes:
 npm run prisma:generate     # Generate Prisma client
-npm run test               # Run all tests  
+npm run test               # Run all tests
 npm run lint               # Code quality checks
 ```
 
@@ -399,6 +415,7 @@ npm run lint               # Code quality checks
 ## 📚 Documentation
 
 ### Main Documentation
+
 - **Main README**: This file - overview and quick start
 - **MICROSERVICES.md**: Detailed explanation of the microservices architecture
 - **QUICK_START.md**: Fast setup guide for new developers
@@ -406,11 +423,14 @@ npm run lint               # Code quality checks
 - **CONTRIBUTING.md**: Guidelines for contributing to the project
 
 ### Service Documentation
+
 - **Service READMEs**: Each service has detailed API documentation
   - [User Service](services/user-service/README.md)
-  - [API Gateway](services/neatspend-api/README.md)
+  - [Nginx Gateway](services/nginx-gateway/README.md)
+  - [SMS Sync Worker](services/sms-sync-worker/README.md)
 
 ### Infrastructure
+
 - **Docker Setup**: `docker-compose.yml` with full service orchestration
 - **Package Management**: `package.json` with workspace configuration
 - **Devcontainer**: [.devcontainer/README.md](.devcontainer/README.md) for Codespaces setup

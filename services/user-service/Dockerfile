@@ -36,7 +36,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
-# Generate Prisma client after copying schema
+# # Generate Prisma client after copying schema
 RUN npx prisma generate
 
 # Switch to non-root user

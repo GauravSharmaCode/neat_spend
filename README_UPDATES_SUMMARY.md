@@ -1,6 +1,23 @@
 # README Updates Summary
 
-## Changes Made
+## Latest Changes (SMS Sync Worker Integration)
+
+### Main README.md
+- Updated architecture diagram to include SMS Sync Worker service
+- Added SMS Sync Worker to service access URLs (port 4002)
+- Updated repository structure to show SMS Sync Worker as implemented (✅)
+- Added SMS Sync Worker endpoints to available endpoints table
+- Moved SMS Sync Worker from "Planned Services" to "Currently Implemented"
+- Updated service description to reflect Firestore integration and JWT authentication
+
+### API_DOCUMENTATION.md
+- Added comprehensive SMS Sync Worker API documentation
+- Included all CRUD endpoints for message management
+- Added authentication requirements for SMS sync endpoints
+- Updated base URLs to include SMS Sync Worker direct access
+- Added request/response examples for all SMS sync operations
+
+## Previous Changes
 
 ### Main README.md
 - Updated repository structure to reflect current state of the project

@@ -14,8 +14,9 @@ High-performance API Gateway using Nginx to replace the Express.js gateway.
 ## Configuration
 
 The gateway routes requests to:
+
 - User Service: `/api/v1/auth/*` and `/api/v1/users/*`
-- SMS Service: `/api/v1/sms/*` (future)
+- SMS Service: `/api/v1/sms/*`
 - Insight Service: `/api/v1/insights/*` (future)
 
 ## Endpoints

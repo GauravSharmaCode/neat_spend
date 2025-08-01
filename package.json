@@ -4,20 +4,25 @@
   "private": true,
   "description": "NeatSpend microservices monorepo",
   "workspaces": [
-    "services/user-service"
+    "services/user-service",
+    "services/sms-sync-worker"
   ],
   "scripts": {
     "ci": "npm ci",
-    "dev:all": "npm run dev --workspace=services/user-service",
+    "dev:all": "concurrently \"npm run dev:user-service\" \"npm run dev:sms-sync-worker\"",
     "dev:user-service": "npm run dev --workspace=services/user-service",
-    "test:all": "npm run test --workspace=services/user-service",
+    "dev:sms-sync-worker": "npm run dev --workspace=services/sms-sync-worker",
+    "test:all": "npm run test:user-service && npm run test:sms-sync-worker",
     "test:user-service": "npm run test --workspace=services/user-service",
-    "test:ci": "npm run test --workspace=services/user-service",
-    "test:coverage": "npm run test --workspace=services/user-service -- --coverage",
-    "lint:all": "npm run lint --workspace=services/user-service",
+    "test:sms-sync-worker": "npm run test --workspace=services/sms-sync-worker",
+    "test:ci": "npm run test:user-service && npm run test:sms-sync-worker",
+    "test:coverage": "npm run test --workspace=services/user-service -- --coverage && npm run test --workspace=services/sms-sync-worker -- --coverage",
+    "lint:all": "npm run lint:user-service && npm run lint:sms-sync-worker",
     "lint:user-service": "npm run lint --workspace=services/user-service",
-    "build:all": "npm run build --workspace=services/user-service",
+    "lint:sms-sync-worker": "npm run lint --workspace=services/sms-sync-worker",
+    "build:all": "npm run build:user-service && npm run build:sms-sync-worker",
     "build:user-service": "npm run build --workspace=services/user-service",
+    "build:sms-sync-worker": "npm run build --workspace=services/sms-sync-worker",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
     "docker:down": "docker-compose down",
@@ -33,6 +38,7 @@
     "create-service": "node scripts/create-service.js",
     "test:services": "node scripts/test-services.js",
     "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -79,3 +85,4 @@
     "@gauravsharmacode/neat-logger": "^1.0.1"
   }
 }
+
